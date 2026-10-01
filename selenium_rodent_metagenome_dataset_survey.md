@@ -343,3 +343,33 @@ and can proceed immediately.
 - Rat gut gene catalogues — <https://academic.oup.com/gigascience/article/7/5/giy055/4995266> · <https://zenodo.org/records/14184150>
 - CNCB-NGDC GSA — <https://ngdc.cncb.ac.cn/gsa/index.jsp>
 </content>
+
+---
+
+## 8. Addendum (2026-10-01): accession numbers recovered
+
+Re-attempted direct queries against **ENA** (`www.ebi.ac.uk`) and **CNCB-NGDC GSA**
+(`ngdc.cncb.ac.cn`). Both still denied at the proxy (`403` on CONNECT); policy unchanged. Accessions
+below were recovered **via server-side web search only** — no repository record was opened, so
+platform, `library_strategy` and public/embargoed state are unconfirmed.
+
+| Accession | Study | Sequencing | Meets criteria |
+|---|---|---|---|
+| `PRJNA857801` | Se intervention, breast-cancer mice on high-fat diet (`PMC11322145`) | shotgun metagenome | **No** — cancer + high-fat diet |
+| `PRJNA1083232` | Se deficiency, aged telomere-humanized diabetic mice (`PMC12341817`, `10.1111/acel.70130`) | **16S rRNA, MiSeq** | **No** — amplicon; GM animal; type-2 diabetes |
+| `PRJNA1056856` | Trace-element Se, **nude** mice, colorectal cancer (`PMC11279152`) | 16S rRNA | **No** — amplicon; cancer; immunodeficient |
+| `PRJNA777712` | attributed to Se-nanoparticle / oxidative-stress intestinal-barrier work (`PMC9226128`) — **attribution unconfirmed** | unconfirmed | **No / unconfirmed** |
+| `PRJNA834901` | same cluster as above — **attribution unconfirmed** | unconfirmed | **No / unconfirmed** |
+| `PRJNA1261576` | **attribution unconfirmed** | unconfirmed | unconfirmed |
+| `MSV000087829` | Se supplementation, MassIVE — **metabolomics, not reads** | n/a | **No** — not sequencing |
+
+**Result: 0 of 7 accessions satisfy the inclusion criteria.**
+
+- **Chinese databases:** no selenium rodent-gut accession found in NGDC GSA / CNGB. Searches for
+  `CRA######` / `PRJCA######` returned none; every recovered accession is NCBI `PRJNA`.
+- **ENA:** no ENA-native accession (`PRJEB`/`ERP`) found. The `PRJNA` projects above are
+  INSDC-mirrored and therefore *should* be ENA-retrievable, but the `PRJNA`→`PRJEB`/`ERP` mapping
+  was **not** confirmed and must not be guessed.
+- **Candidate 1** (L-Se-methylselenocysteine SD-rat dose–response, `PMC13045510`) — the one
+  structurally eligible study — still has **no recoverable accession**. Its Data Availability
+  statement was not retrievable by search.
