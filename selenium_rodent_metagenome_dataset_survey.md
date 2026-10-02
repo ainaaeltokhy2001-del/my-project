@@ -373,3 +373,126 @@ platform, `library_strategy` and public/embargoed state are unconfirmed.
 - **Candidate 1** (L-Se-methylselenocysteine SD-rat dose–response, `PMC13045510`) — the one
   structurally eligible study — still has **no recoverable accession**. Its Data Availability
   statement was not retrievable by search.
+
+---
+
+## 9. Candidate 1 full record (2026-10-02)
+
+Egress still blocked (`www.frontiersin.org`, `pmc.ncbi.nlm.nih.gov`, `doi.org`,
+`eutils.ncbi.nlm.nih.gov`, `www.ebi.ac.uk`, `ngdc.cncb.ac.cn` — all `403` at proxy CONNECT).
+Everything below was reconstructed through server-side web search. **The repository records were
+never opened**, so public/embargoed state, `library_strategy`, run count and file sizes are
+unconfirmed.
+
+### Publication
+
+| Field | Value |
+|---|---|
+| Title | Gender-specific and dose-dependent responses to L-Se-methylselenocysteine are mediated by the gut microbiota-metabolite axis: implications for intestinal homeostasis and safe clinical application |
+| Authors | Zhang (Hui Zhang), Wu, Sun, Sun, Chang, Yuan — *surname list; full given names not recovered* |
+| Journal | Frontiers in Nutrition |
+| Published | 19 March 2026 |
+| DOI | `10.3389/fnut.2026.1803630` |
+| PMID | `41939187` |
+| PMCID | `PMC13045510` |
+
+### Repository / accessions
+
+| Accession | Content | Archive |
+|---|---|---|
+| **`PRJNA1417577`** | **Microbiome (metagenomic) raw data — the target dataset** | NCBI |
+| `OMIX014882` | Metabolome | NGDC OMIX |
+| `OMIX014883` | Metabolome | NGDC OMIX |
+
+Download routes (**constructed from accession conventions, not verified**):
+
+```
+https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1417577
+https://www.ebi.ac.uk/ena/browser/view/PRJNA1417577          # INSDC mirror
+https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA1417577&result=read_run&fields=run_accession,library_strategy,library_layout,instrument_platform,read_count,fastq_ftp,sample_title&format=tsv
+https://ngdc.cncb.ac.cn/omix/release/OMIX014882
+https://ngdc.cncb.ac.cn/omix/release/OMIX014883
+```
+
+### Animals
+
+| Field | Value |
+|---|---|
+| Species | *Rattus norvegicus* |
+| Strain | Sprague–Dawley, SPF |
+| Sex | Both; **8 male + 8 female per group** |
+| n | **80 total — 16 per group × 5 groups** |
+| Age / body weight at start | **not recovered** |
+| Supplier | not recovered |
+
+### Selenium intervention
+
+| Field | Value |
+|---|---|
+| Compound | L-Se-methylselenocysteine (L-SeMC), organic Se |
+| Route | Oral gavage |
+| Duration | 90 consecutive days |
+| Dietary Se concentration | **not reported** — exposure is gavage dose, not mg Se/kg chow; basal-diet Se background unknown |
+
+| Group | Dose (mg/kg bw/day) |
+|---|---|
+| Control | 0 |
+| T1 | 0.25 |
+| T2 | 0.75 |
+| T3 | 1.50 |
+| T4 | 2.25 |
+
+Human-equivalent for the T1–T2 range: ~1.04–3.12 mg per 60 kg bw/day.
+
+### Sample & sequencing
+
+| Field | Value |
+|---|---|
+| Sample type | Fresh **feces**, collected day 90, stored −80 °C |
+| Profiling provider | Wuhan Metware Biotechnology Co., Ltd. (Wuhan, China) |
+| Strategy | Metagenomic sequencing (shotgun) — **`library_strategy` not confirmed in SRA** |
+| Platform / read length / layout | **not recovered** |
+| n samples | not recovered (≤80 if one per animal) |
+| Differential testing | LEfSe + log-fold-change in parallel |
+
+Species-level resolution is reported (individual *Bifidobacterium* species), which is consistent with
+true shotgun rather than amplicon data — supporting but not proving eligibility.
+
+### Key findings
+
+- Strong **sex asymmetry**: females far more responsive; dose-dependent α-diversity shifts.
+  Females showed 7 down- vs 2 up-regulated taxa; male changes modest at every dose.
+- **T1–T3 (0.25–1.50)**: protective "microbe → beneficial metabolite" axis supporting hepatic
+  health; multiple beneficial *Bifidobacterium* species enriched in T3 females.
+- **T4 (2.25)**: axis disrupted **in females only**, metabolic dysregulation and **irreversible
+  hepatosplenic injury**; no such injury in males.
+
+### Suitability for the selenium-only research question
+
+**Confidence: B, usable — but only a subset of the design.**
+
+- **Use** Control vs **T1 (0.25)** and **T2 (0.75)** — a clean graded Se-supplementation vs control
+  contrast with no second intervention.
+- **Exclude T4 (2.25)**: it produces frank organ injury, so it is a selenium *toxicity* arm and falls
+  under your "toxins" exclusion. T3 (1.50) sits on the boundary — supra-nutritional but not injurious.
+- **Model sex explicitly.** Sex is a deliberate variable with a large effect; pooling it will bury the
+  Se signal. Per-sex n is 8 per dose.
+- **Caveats:** gavage rather than dietary incorporation (no mg Se/kg chow figure, basal Se unknown);
+  rat not mouse, so bin against rat gut references; no selenium-deficient arm — this answers
+  "control vs supplementation" only.
+
+### Still unresolved
+
+1. Is `PRJNA1417577` public, and is its `library_strategy` `WGS` rather than `AMPLICON`?
+2. Platform, read length, layout, run count, per-sample→group mapping.
+3. Rat age/weight at study start; basal diet Se content.
+4. Full author given names.
+
+All four resolve from the two URLs above once egress is opened.
+
+### Additional lead found
+
+`PMC10745411` — *Comparative Analysis of Gut Microbiota from Rats Induced by Se Deficiency and T-2
+Toxin* (Nutrients 2023;15(24):5027). Carries a **Se-deficiency rat arm**, which is the arm missing
+from Candidate 1. The T-2 toxin arm is excluded, but a Se-deficient-vs-control contrast may be
+separable. Sequencing strategy and accession unchecked — worth a lookup.
