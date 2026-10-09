@@ -553,3 +553,59 @@ PMID `40268463`, on dimethyldiselenide and dimethylselenide gut metabolism) repo
 communities and higher diversity under Se excess. Some arms use antibiotic microbiota suppression
 (excluded), and the sample site and sequencing strategy were not recoverable. Worth one lookup — a
 three-arm design is otherwise absent from everything found here.
+
+---
+
+## 11. Accessions confirmed; fetch attempted (2026-10-09)
+
+The paper's Data availability statement was supplied directly and **confirms the accessions
+recovered by search in §9**:
+
+> The microbiome data of all groups are deposited in the National Center for Biotechnology
+> Information (NCBI) database access number: **PRJNA1417577**. Metabolome data for all groups are
+> deposited in the National Genomics Data Center (NGDC), access numbers: **OMIX014882** and
+> **OMIX014883**.
+
+### Fetch attempt: failed, environment-blocked
+
+| Host | Purpose | Result |
+|---|---|---|
+| `ftp.sra.ebi.ac.uk` | ENA FASTQ delivery | blocked |
+| `sra-download.ncbi.nlm.nih.gov` | SRA delivery | blocked |
+| `trace.ncbi.nlm.nih.gov` | SRA run browser | blocked |
+| `www.ebi.ac.uk` | ENA portal API | blocked (`403` at proxy) |
+| `ngdc.cncb.ac.cn`, `download.cncb.ac.cn` | NGDC OMIX | blocked |
+| `api.ncbi.nlm.nih.gov` | NCBI API | blocked |
+| `pypi.org` | *control* | **200** |
+| `github.com` | *control* | reachable |
+
+The network policy is an **allowlist permitting package registries and GitHub only**; no scientific
+data repository is reachable. SRA toolkit (`prefetch`, `fasterq-dump`), `aws` and `ascp` are not
+installed, and PyPI being open means `sra-tools` still cannot be installed usefully — the binaries
+would have nothing to talk to.
+
+**Separately, the data would not fit.** This container has ~30 GB free. A shotgun metagenomic
+project of up to 80 rat fecal samples is plausibly 300–800 GB of compressed FASTQ. Even with egress
+opened, the reads need a machine with real storage; this container could hold a manifest and a
+handful of runs at most.
+
+### Deliverable: `fetch_selenium_datasets.sh`
+
+A ready-to-run fetch script is committed at the repository root. Syntax-checked and executed here —
+it runs correctly and fails only at the network boundary (`403` from the proxy), so it is ready to
+work unchanged on an unrestricted machine.
+
+```
+./fetch_selenium_datasets.sh manifest       # run table only — small, do this first
+./fetch_selenium_datasets.sh reads [N]      # download FASTQs (optionally first N runs)
+./fetch_selenium_datasets.sh metabolome     # OMIX landing pages
+```
+
+`manifest` is the important one: it pulls the ENA run table and prints `library_strategy`,
+platform, layout, organism, run count, total download size, and the per-run sample titles that carry
+the group mapping. That settles every open question in §9 in one small request, before any bulk
+transfer. The `reads` step **refuses to download unless `library_strategy` is `WGS`**, so an
+amplicon deposit cannot be mistaken for shotgun data (override with `FORCE=1`).
+
+A fallback SRA-toolkit recipe is included at the end of the script for the case where ENA has not
+yet mirrored the project.
