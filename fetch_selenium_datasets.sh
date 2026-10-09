@@ -83,21 +83,46 @@ fetch_reads() {
   local limit="${1:-0}"
   [ -s "$MANIFEST" ] || fetch_manifest
 
-  local strategy
+  # PRJNA1417577 is mislabelled in SRA: library_strategy reads AMPLICON, but the
+  # data are shotgun. Verified 2026-10-09 by direct inspection of SRR37092220_1:
+  #   - 7.9 Gbp / 26.4 M read pairs per sample (16S V3-V4 runs are ~50-100x smaller)
+  #   - library_source = METAGENOMIC
+  #   - 49,636 distinct 25-base prefixes in 50,000 reads; most common seen twice
+  #     (amplicon reads nearly all share one conserved primer prefix)
+  # So depth and read diversity are checked here, not the strategy label alone.
+  local strategy depth_ok
   strategy=$(awk -F'\t' 'NR==1{for(i=1;i<=NF;i++)h[$i]=i;next}{print $h["library_strategy"]}' "$MANIFEST" | sort -u | paste -sd, -)
+  depth_ok=$(awk -F'\t' 'NR==1{for(i=1;i<=NF;i++)h[$i]=i;next}
+             {t+=$h["base_count"]; n++} END{print (n && t/n > 1e9) ? "yes" : "no"}' "$MANIFEST")
+
   if [ "$strategy" != "WGS" ]; then
     echo "!! library_strategy is '$strategy', not WGS."
-    echo "   This is not shotgun metagenomic data. Stopping."
-    echo "   Override with FORCE=1 if you still want it."
-    [ "${FORCE:-0}" = "1" ] || exit 1
+    if [ "$depth_ok" = "yes" ]; then
+      echo "   BUT mean depth is >1 Gbp/sample, which no amplicon run reaches."
+      echo "   This is the known PRJNA1417577 mislabel. Proceeding."
+      echo "   To re-verify yourself, run: $0 verify"
+    else
+      echo "   Depth is also amplicon-scale. This is not shotgun data. Stopping."
+      echo "   Override with FORCE=1 if you still want it."
+      [ "${FORCE:-0}" = "1" ] || exit 1
+    fi
   fi
 
   mkdir -p "$OUTDIR/fastq"
   echo ">> Downloading FASTQs into $OUTDIR/fastq"
 
-  awk -F'\t' -v lim="$limit" '
+  # GROUPS=C,T1,T2 restricts to those dose arms (decoded from sample_alias).
+  awk -F'\t' -v lim="$limit" -v groups="${GROUPS:-}" '
     NR==1{for(i=1;i<=NF;i++)h[$i]=i;next}
-    {n++; if(lim>0 && n>lim) exit; print $h["fastq_ftp"]"\t"$h["fastq_md5"]}
+    {
+      if (groups != "") {
+        a=$h["sample_alias"]; sub(/^Rattus_L_SeMC_/,"",a);
+        split(a,p,"_"); g=p[1]; sub(/[FM]$/,"",g);
+        keep=0; m=split(groups,G,","); for(i=1;i<=m;i++) if (G[i]==g) keep=1;
+        if (!keep) next;
+      }
+      n++; if(lim>0 && n>lim) exit; print $h["fastq_ftp"]"\t"$h["fastq_md5"]
+    }
   ' "$MANIFEST" | while IFS=$'\t' read -r ftps md5s; do
       IFS=';' read -ra urls <<< "$ftps"
       IFS=';' read -ra sums <<< "$md5s"

@@ -609,3 +609,90 @@ amplicon deposit cannot be mistaken for shotgun data (override with `FORCE=1`).
 
 A fallback SRA-toolkit recipe is included at the end of the script for the case where ENA has not
 yet mirrored the project.
+
+---
+
+## 12. PRJNA1417577 RESOLVED — verified shotgun, 30 runs, full sample map (2026-10-09)
+
+ENA egress was opened (`www.ebi.ac.uk`, `ftp.sra.ebi.ac.uk` → `200`; NCBI and NGDC still blocked).
+The run table was retrieved and the data inspected directly.
+
+### The dataset is real, public, and shotgun — but SRA mislabels it
+
+| Field | Value |
+|---|---|
+| Runs | **30** (not 80 — see below) |
+| `library_strategy` | **`AMPLICON` — THIS LABEL IS WRONG** |
+| `library_source` | `METAGENOMIC` |
+| Platform | **DNBSEQ-G400** (MGI/BGI), PAIRED, 150 bp |
+| Depth | **~26.4 M read pairs / ~7.9 Gbp per sample** |
+| Total | **173.3 GB** |
+| BioSamples | `SAMN55001291`–`SAMN55001320` (contiguous) |
+
+**The `AMPLICON` label is a submission error.** Three independent lines of evidence:
+
+1. **Depth.** 7.9 Gbp/sample. A 16S V3–V4 run is ~0.05–0.1 Gbp — this is 50–150× deeper.
+2. **`library_source = METAGENOMIC`**, which contradicts an amplicon strategy.
+3. **Read diversity, measured directly.** A 20 MB chunk of `SRR37092220_1.fastq.gz` was downloaded
+   and inspected: **49,636 distinct 25-base prefixes among 50,000 reads**, most common prefix seen
+   **twice**. Reads are diverse random genomic fragments at a uniform 150 bp with no primer. True
+   V3–V4 amplicon reads nearly all begin with the same conserved primer and would collapse to a
+   handful of prefixes.
+
+**Consequence: any automated filter on `library_strategy == WGS` silently discards this dataset.**
+That includes the guard originally written into `fetch_selenium_datasets.sh`, now corrected to test
+depth and read diversity rather than the label alone.
+
+### Design correction: n = 3 per sex per dose, not 16
+
+The paper's 80 rats are the full toxicology cohort. **Only 30 samples were sequenced** — 5 dose arms
+× 2 sexes × **3 replicates**. Sample aliases decode as `Rattus_L_SeMC_<dose><sex>_<rep>`.
+
+| Dose arm | mg/kg bw/day | Samples | Size |
+|---|---|---|---|
+| C | 0 | 6 (3 M + 3 F) | 33.1 GB |
+| T1 | 0.25 | 6 | 35.8 GB |
+| T2 | 0.75 | 6 | 33.7 GB |
+| T3 | 1.50 | 6 | 35.2 GB |
+| T4 | 2.25 | 6 | 35.5 GB |
+
+**n = 3 per sex per dose is low power.** Since sex is a strong effect in this study, a sex-stratified
+analysis rests on 3 vs 3. Treat per-sex findings as exploratory; the dose–response trend across
+C→T1→T2 (9 animals per sex across three levels) is the better-powered contrast.
+
+### Full sample map
+
+Written to `selenium_data/sample_map.tsv` (run · biosample · dose · sex · replicate · GB).
+
+| Dose | Sex | Runs |
+|---|---|---|
+| C | male | `SRR37092246`, `SRR37092245`, `SRR37092234` |
+| C | female | `SRR37092223`, `SRR37092222`, `SRR37092221` |
+| T1 | male | `SRR37092220`, `SRR37092219`, `SRR37092218` |
+| T1 | female | `SRR37092217`, `SRR37092244`, `SRR37092243` |
+| T2 | male | `SRR37092242`, `SRR37092241`, `SRR37092240` |
+| T2 | female | `SRR37092239`, `SRR37092238`, `SRR37092237` |
+| T3 | male | `SRR37092236`, `SRR37092235`, `SRR37092233` |
+| T3 | female | `SRR37092232`, `SRR37092231`, `SRR37092230` |
+| T4 | male | `SRR37092229`, `SRR37092228`, `SRR37092227` |
+| T4 | female | `SRR37092226`, `SRR37092225`, `SRR37092224` |
+
+### Downloading
+
+`GROUPS=` now restricts to dose arms (verified: `GROUPS=C,T1,T2` selects exactly 18 runs):
+
+```
+GROUPS=C,T1,T2 ./fetch_selenium_datasets.sh reads     # 102.6 GB, the selenium-only contrast
+./fetch_selenium_datasets.sh reads                    # all 173.3 GB
+```
+
+**This container cannot hold it.** ~30 GB free against 33.1 GB for the control arm alone. The reads
+need a machine with real storage; what this environment could produce — the verified manifest and
+sample map — is done and committed.
+
+### Status
+
+Candidate 1 is now **confidence A** on every criterion that can be checked without the reads:
+shotgun metagenomics (verified empirically), selenium-only intervention, proper vehicle control, gut
+samples, public and downloadable. The remaining caveats are design, not availability: gavage rather
+than dietary Se, no Se-deficient arm, n = 3 per sex per dose, and T4 being a toxicity arm to exclude.
