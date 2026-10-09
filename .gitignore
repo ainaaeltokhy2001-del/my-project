@@ -1,0 +1,7 @@
+# Sequence data: hundreds of GB, lives in ENA, never in git.
+# Re-fetch with fetch_selenium_datasets.sh or selenium_data/dl_subset.sh
+selenium_data/fastq/
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
