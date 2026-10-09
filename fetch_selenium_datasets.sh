@@ -22,6 +22,7 @@ BIOPROJECT="PRJNA1417577"
 OMIX_IDS=(OMIX014882 OMIX014883)
 OUTDIR="${OUTDIR:-./selenium_data}"
 MANIFEST="$OUTDIR/${BIOPROJECT}_runs.tsv"
+CORRECTED="$OUTDIR/metagenomic_runs_corrected.tsv"
 
 FIELDS="run_accession,study_accession,sample_accession,experiment_accession,scientific_name,library_strategy,library_source,library_layout,instrument_platform,instrument_model,read_count,base_count,fastq_ftp,fastq_bytes,fastq_md5,sample_title,sample_alias"
 
@@ -108,29 +109,42 @@ fetch_reads() {
     fi
   fi
 
-  mkdir -p "$OUTDIR/fastq"
-  echo ">> Downloading FASTQs into $OUTDIR/fastq"
+  # Prefer the corrected manifest (both metagenomic projects, mislabel fixed,
+  # dose/sex decoded) when it exists; fall back to the single-project manifest.
+  local src="$MANIFEST" use_corrected=0
+  if [ -s "$CORRECTED" ]; then src="$CORRECTED"; use_corrected=1
+    echo ">> Using corrected manifest: $CORRECTED"
+  fi
 
-  # GROUPS=C,T1,T2 restricts to those dose arms (decoded from sample_alias).
-  awk -F'\t' -v lim="$limit" -v groups="${GROUPS:-}" '
+  echo ">> Downloading FASTQs into $OUTDIR/fastq/<bioproject>/<arm>/"
+  echo "   (all metagenomic runs by default; set GROUPS= to restrict)"
+
+  # GROUPS=C,T1,T2 restricts to those dose arms. Unset keeps everything.
+  awk -F'\t' -v lim="$limit" -v groups="${GROUPS:-}" -v corr="$use_corrected" '
     NR==1{for(i=1;i<=NF;i++)h[$i]=i;next}
     {
-      if (groups != "") {
+      if (corr) { g=$h["dose_arm"]; bp=$h["bioproject"]; sx=$h["sex"] }
+      else {
         a=$h["sample_alias"]; sub(/^Rattus_L_SeMC_/,"",a);
-        split(a,p,"_"); g=p[1]; sub(/[FM]$/,"",g);
+        split(a,p,"_"); g=p[1]; sub(/[FM]$/,"",g); bp="PRJNA1417577"; sx=""
+      }
+      if (groups != "" && g != "") {
         keep=0; m=split(groups,G,","); for(i=1;i<=m;i++) if (G[i]==g) keep=1;
         if (!keep) next;
       }
-      n++; if(lim>0 && n>lim) exit; print $h["fastq_ftp"]"\t"$h["fastq_md5"]
+      arm = (g=="" ? "unassigned" : g (sx=="" ? "" : "_" sx));
+      n++; if(lim>0 && n>lim) exit;
+      print $h["fastq_ftp"]"\t"$h["fastq_md5"]"\t"bp"/"arm
     }
-  ' "$MANIFEST" | while IFS=$'\t' read -r ftps md5s; do
+  ' "$src" | while IFS=$'\t' read -r ftps md5s subdir; do
       IFS=';' read -ra urls <<< "$ftps"
       IFS=';' read -ra sums <<< "$md5s"
+      mkdir -p "$OUTDIR/fastq/$subdir"
       for i in "${!urls[@]}"; do
         [ -n "${urls[$i]}" ] || continue
-        f="$OUTDIR/fastq/$(basename "${urls[$i]}")"
-        if [ -f "$f" ]; then echo "   skip (exists): $(basename "$f")"; continue; fi
-        echo "   get: $(basename "$f")"
+        f="$OUTDIR/fastq/$subdir/$(basename "${urls[$i]}")"
+        if [ -f "$f" ]; then echo "   skip (exists): $subdir/$(basename "$f")"; continue; fi
+        echo "   get: $subdir/$(basename "$f")"
         curl -fsS --retry 5 --retry-delay 2 -C - -o "$f" "https://${urls[$i]}"
         if [ -n "${sums[$i]:-}" ]; then
           got=$(md5sum "$f" | cut -d' ' -f1)
@@ -140,7 +154,7 @@ fetch_reads() {
         fi
       done
   done
-  echo ">> Done. Files in $OUTDIR/fastq"
+  echo ">> Done. Files in $OUTDIR/fastq (laid out by bioproject/arm)"
 }
 
 fetch_metabolome() {

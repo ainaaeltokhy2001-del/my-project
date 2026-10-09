@@ -696,3 +696,74 @@ Candidate 1 is now **confidence A** on every criterion that can be checked witho
 shotgun metagenomics (verified empirically), selenium-only intervention, proper vehicle control, gut
 samples, public and downloadable. The remaining caveats are design, not availability: gavage rather
 than dietary Se, no Se-deficient arm, n = 3 per sex per dose, and T4 being a toxicity arm to exclude.
+
+---
+
+## 13. Full accession audit — all metagenomic data kept, mislabel corrected (2026-10-09)
+
+Every accession in this survey was re-checked against ENA, and the two borderline cases were
+verified by direct read inspection rather than by trusting the deposited metadata.
+
+### Audit result
+
+| Accession | Runs | Declared | Source | Mean Gbp | **Verified type** | Label correct |
+|---|---|---|---|---|---|---|
+| `PRJNA1417577` | 30 | `AMPLICON` | METAGENOMIC | **8.05** | **SHOTGUN** | **NO → corrected to WGS** |
+| `PRJNA857801` | 10 | `WGS` | METAGENOMIC | 3.16 | SHOTGUN | yes |
+| `PRJNA1083232` | 48 | `AMPLICON` | GENOMIC | 0.44 | 16S amplicon | yes |
+| `PRJNA1056856` | 24 | `AMPLICON` | METAGENOMIC | 0.03 | 16S amplicon | yes |
+| `PRJNA777712` | 32 | `AMPLICON` | METAGENOMIC | 0.02 | 16S amplicon | yes |
+| `PRJNA834901` | 28 | `AMPLICON` | METAGENOMIC | 0.05 | 16S amplicon | yes |
+| `PRJNA1261576` | 30 | `AMPLICON` | METAGENOMIC | 0.04 | 16S amplicon | yes |
+
+Depth separates the two classes cleanly — 3.16–8.05 Gbp/sample for shotgun against 0.02–0.44 for
+amplicon, with no overlap. **Exactly one deposit is mislabelled.**
+
+`PRJNA1083232` was the one case depth alone could not settle (0.44 Gbp, ~10× the other amplicon
+sets), so it was probed the same way as `PRJNA1417577`: **724 distinct 25-base prefixes in 30,000
+reads**, the commonest (`CCTACGGGGGGCTGCAGTGAGGAAT`, 2,563 occurrences) being the **341F V3–V4
+primer**, at 300 bp on MiSeq. Genuine amplicon — its `AMPLICON` label is right, and it stays
+excluded. Contrast `PRJNA1417577`: 49,636/50,000 distinct prefixes, no primer, 150 bp.
+
+### Corrected manifest — `selenium_data/metagenomic_runs_corrected.tsv`
+
+**All 40 metagenomic runs, 186.4 GB, nothing dropped:**
+
+| BioProject | Runs | Size | Corrected |
+|---|---|---|---|
+| `PRJNA1417577` | 30 | 173.3 GB | all 30: `AMPLICON` → `WGS` |
+| `PRJNA857801` | 10 | 13.1 GB | none needed |
+
+Each row carries both `library_strategy` (corrected) and `library_strategy_as_deposited`
+(original), plus `label_corrected` and `correction_basis`, so the change is auditable and nothing is
+silently overwritten. Decoded `dose_arm`, `sex` and `replicate` columns are included, with FASTQ
+URLs and md5s.
+
+All five dose arms are retained, T3 and T4 included. They remain **analytically** excluded from a
+selenium-only contrast (T4 causes hepatosplenic injury), but the data are kept and labelled so that
+decision stays yours rather than being baked into the manifest.
+
+`PRJNA857801` is kept here because it **is** genuine shotgun metagenomic selenium data. Its study
+design is still confounded (breast-cancer model on high-fat diet), so it is not a substitute for
+Candidate 1 — but as a second, independent shotgun selenium dataset it is worth holding for
+cross-checking any Se-responsive gene signal.
+
+### Download layout
+
+Files now land under `fastq/<bioproject>/<arm>_<sex>/`, verified to produce:
+
+```
+PRJNA1417577/C_female  C_male  T1_female  T1_male  T2_female  T2_male
+               T3_female  T3_male  T4_female  T4_male      (3 runs each)
+PRJNA857801/unassigned                                      (10 runs)
+```
+
+Defaults to **all** metagenomic runs; `GROUPS=C,T1,T2` narrows to the selenium-only contrast.
+
+### The general lesson
+
+`library_strategy` is submitter-supplied and unverified by the archive. A filter on
+`library_strategy == WGS` would have silently discarded the single best dataset in this entire
+survey. For selenium work specifically — where much of the field deposits through commercial
+providers — screen on **`base_count` per sample** first and confirm with a read-diversity check.
+Depth plus prefix entropy separated these seven deposits perfectly; the declared label did not.
