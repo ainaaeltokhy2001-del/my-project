@@ -496,3 +496,60 @@ All four resolve from the two URLs above once egress is opened.
 Toxin* (Nutrients 2023;15(24):5027). Carries a **Se-deficiency rat arm**, which is the arm missing
 from Candidate 1. The T-2 toxin arm is excluded, but a Se-deficient-vs-control contrast may be
 separable. Sequencing strategy and accession unchecked — worth a lookup.
+
+---
+
+## 10. Non-fecal / small-intestine sampling (2026-10-09)
+
+Egress still blocked (`www.ebi.ac.uk`, `pmc.ncbi.nlm.nih.gov` → `000`). Search-derived; no
+repository record opened.
+
+**Answer: yes, selenium studies sampling the small intestine exist — but every one is 16S amplicon.
+No selenium rodent study was found that applied shotgun metagenomics to intestinal contents of any
+segment.** All shotgun selenium rodent data located in this survey (`PRJNA1417577`, `PRJNA857801`)
+are **fecal**.
+
+| Study | Sample site | Sequencing | Se design | Notes |
+|---|---|---|---|---|
+| Wang F. et al., *Front Immunol* 2022;13:947655 (`PMC9299101`, `10.3389/fimmu.2022.947655`) | **Small intestinal contents** | 16S | **Se-deficient (LSe) vs Se-adequate (CSe)** | Best sample-type + design match. ↑ *Lactobacillus*, *Bifidobacterium*, *Ileibacterium*; ↓ *Romboutsia* in LSe. Accession not found |
+| Wang G. et al., *BioFactors* 2024;50(2):311–325 (`10.1002/biof.2006`) | **Jejunum** | 16S (rRNA-targeted) | Se deficiency vs control | Also carries FMT and *L. reuteri* arms (excluded); the Se-deficient-vs-control contrast is separable. ↓ *L. reuteri* the dominant effect. Accession not found |
+| Research Square `rs-3851778` (same group) | Small intestine contents (0.2 g) | 16S, Illumina NovaSeq | Se deficiency + *L. reuteri* | **Probiotic arm** — excluded |
+| Se supplementation / testicular selenoproteins (`PMC8913620`) | **Colon** contents | 16S | Control vs Se-supplemented | Non-gut endpoint, gut sample usable |
+| Mojadadi et al., *Redox Report* 2025 (`PMC12035940`, `10.1080/13510002.2025.2495367`, PMID `40277453`) | Stool from **large colon** | 16S V3–V4 | Inorganic vs organic vs nanoparticle Se, male mice | Three Se forms, Se-only intervention; amplicon only. Accession not found |
+| Se-enriched egg powder, Kunming mice (`PMC13024860`) | **Cecal** microbiota | 16S | Se-enriched food matrix | Matrix confound (egg powder), not pure Se |
+
+### Note on the *Front Immunol* 2022 study's eligibility
+
+Its title names inflammation, autophagy, ER stress and apoptosis, which reads like an
+inflammatory-disease model and therefore an exclusion. It is not: those are **downstream
+consequences of the selenium deficiency itself**, measured as endpoints in intestinal smooth muscle.
+The only manipulated variable is dietary Se (LSe vs CSe). The design is clean; it fails on
+**sequencing strategy only**.
+
+### Why this gap exists, and what it means
+
+Small-intestinal and jejunal contents carry **low microbial biomass and a high host-DNA fraction**,
+so shotgun libraries from them are dominated by mouse/rat reads and are expensive to sequence to
+useful microbial depth. That is the practical reason the segment is almost always profiled by
+amplicon. It is also a real constraint to plan around if generating new data: expect to need host-DNA
+depletion and substantially deeper sequencing than for feces.
+
+This leaves a genuine trade-off:
+
+- **Small intestine** — the site where host–microbe competition for selenium absorption actually
+  occurs, and biologically the more interesting target — has **no shotgun data**, so MAG
+  reconstruction, functional profiling and `selD`/`sen` gene mining are not possible from it.
+- **Shotgun depth** is available **only from feces** (`PRJNA1417577`).
+
+For goals 3–5 (MAGs, functional profiling, Se-gene and BGC mining) the fecal dataset is the only
+option. The small-intestine 16S studies are usable solely as taxonomic priors — they tell you which
+genera to expect to shift (*Lactobacillus*, *Bifidobacterium*, *Ileibacterium*, *Romboutsia*,
+*L. reuteri*), not what genes are present.
+
+### Additional unchecked lead
+
+A Japanese rat study with a **three-arm Se-deficient / Se-adequate / Se-excessive** design (likely
+PMID `40268463`, on dimethyldiselenide and dimethylselenide gut metabolism) reportedly found distinct
+communities and higher diversity under Se excess. Some arms use antibiotic microbiota suppression
+(excluded), and the sample site and sequencing strategy were not recoverable. Worth one lookup — a
+three-arm design is otherwise absent from everything found here.
