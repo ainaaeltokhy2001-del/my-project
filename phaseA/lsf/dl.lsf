@@ -1,0 +1,7 @@
+#BSUB -J seldl
+#BSUB -q interactive
+#BSUB -n 2
+#BSUB -o logs/dl.%J.out
+#BSUB -e logs/dl.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/dlp.sh

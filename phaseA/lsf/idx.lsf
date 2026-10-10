@@ -1,0 +1,7 @@
+#BSUB -J selidx
+#BSUB -q high
+#BSUB -n 16
+#BSUB -o logs/idx.%J.out
+#BSUB -e logs/idx.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/idx.sh

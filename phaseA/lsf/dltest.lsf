@@ -1,0 +1,7 @@
+#BSUB -J dltest
+#BSUB -q interactive
+#BSUB -n 1
+#BSUB -o logs/dltest.%J.out
+#BSUB -e logs/dltest.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/dltest.sh

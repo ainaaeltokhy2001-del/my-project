@@ -1,0 +1,7 @@
+#BSUB -J "selqc[1-30]"
+#BSUB -q high
+#BSUB -n 16
+#BSUB -o logs/qc.%I.out
+#BSUB -e logs/qc.%I.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/qc.sh

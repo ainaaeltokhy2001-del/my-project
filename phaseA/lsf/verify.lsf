@@ -1,0 +1,7 @@
+#BSUB -J selverify
+#BSUB -q high
+#BSUB -n 1
+#BSUB -o logs/verify.%J.out
+#BSUB -e logs/verify.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/verify.sh | sort | uniq -c -w7
