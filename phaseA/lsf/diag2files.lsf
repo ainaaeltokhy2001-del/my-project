@@ -1,0 +1,7 @@
+#BSUB -J diag2f
+#BSUB -q interactive
+#BSUB -n 1
+#BSUB -o logs/diag2f.%J.out
+#BSUB -e logs/diag2f.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/diag2files.sh
