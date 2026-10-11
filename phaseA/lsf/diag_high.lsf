@@ -1,0 +1,7 @@
+#BSUB -J diaghigh
+#BSUB -q high
+#BSUB -n 1
+#BSUB -o logs/diag.high.%J.out
+#BSUB -e logs/diag.high.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/diagnose.sh high
