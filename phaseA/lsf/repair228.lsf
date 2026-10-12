@@ -1,0 +1,12 @@
+#BSUB -J repair228
+#BSUB -q interactive
+#BSUB -n 1
+#BSUB -o logs/repair228.%J.out
+#BSUB -e logs/repair228.%J.err
+export PROJ=$HOME/selenium
+cd $PROJ/01_raw
+bash $PROJ/scripts/repair_parts.sh \
+  https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR370/028/SRR37092228/SRR37092228_1.fastq.gz \
+  SRR37092228_1.fastq.gz \
+  1b79f5ba334d8c56b1ec88b23c5fe19b \
+  3695678224
