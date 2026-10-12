@@ -1,0 +1,6 @@
+#BSUB -J dlbug
+#BSUB -q interactive
+#BSUB -n 1
+#BSUB -o bugreport.gpu.%J.out
+#BSUB -e bugreport.gpu.%J.err
+bash $HOME/selenium/scripts/BUGREPORT_download_corruption.sh
