@@ -1,50 +1,37 @@
-# Phase A — PRJNA1417577 (Stages 0–3)
+# Phase A — PRJNA1417577
 
-Cluster: IBM LSF, submit with `bsub` (not `sbatch`). Queue **high**
-(no hard memory cap; `normal` has 9,000+ pending). Compute nodes have
-36 cores / 384 GB.
+Scripts organised by stage. Each folder holds the `.sh` that does the work
+and the `.lsf` that submits it.
 
-**Compute nodes have no outbound internet.** Downloads run on the login
-node; everything else runs in jobs.
+| Folder | What it does |
+|---|---|
+| `stage0_retrieval/` | download, checksum-verify, build the rat index |
+| `stage1_qc/` | fastp trimming, bowtie2 host removal, host-fraction check |
+| `stage2_profile/` | read-based taxonomy *(not written yet)* |
+| `stage3_screen/` | selenium marker set and DIAMOND screen *(not written yet)* |
+| `diagnostics/` | network fault finding, and the standalone bug reproducer |
+| `common/` | environment setup, safe downloads, pulling results to your laptop |
+| `00_meta/` | `samples.tsv` — all 30 runs mapped to dose, sex, replicate |
 
-## Layout on the cluster
+## On the cluster
 
-    $PROJ = ~/selenium
-      00_meta/ena.tsv        ENA run table (30 runs)
-      01_raw/                FASTQ, 173 GB, 60 files
-      ref/                   mRatBN7.2 + bowtie2 index
-      envs/qc/               fastp, bowtie2, samtools, seqkit
-      bin/micromamba         no conda on this cluster
-      scripts/ logs/
+Everything goes through `bsub`. Never run anything substantial on a login
+node — a watchdog kills it.
 
-## Scripts
+```bash
+cd $PROJ && bsub < stage1_qc/qc.lsf
+```
 
-| Script | Runs on | Notes |
-|---|---|---|
-| `dlp.sh` | login node | 6 parallel streams, ~12 h. **One instance only.** |
-| `dl_one.sh` | — | worker; md5-verifies, deletes bad files to force refetch |
-| `idx.sh` | compute (`bsub -q high -n 16`) | bowtie2 index, 1–3 h |
+## Getting results back to your laptop
 
-Start a download with `nohup bash scripts/dlp.sh > logs/dlp.log 2>&1 &`
-— single `&`, nothing after it. Check `pgrep -c dl_one.sh` is 0 first.
-Two concurrent instances corrupt the same files.
+Run `common/pull_results.ps1` **on Windows**, not on the cluster. The
+cluster cannot push to you. It copies logs, metadata, QC reports, profile
+tables and figures into `D:\project\from-cluster`, and deliberately skips
+the 173 GB of raw reads.
 
-## Deviations from the spec, recorded
+## Status
 
-- **bowtie2, not bbmap**, for host removal: ~4 GB versus ~16 GB index.
-  Spec §3 names bowtie2 as its own fallback.
-- **Reference not masked**, unlike JGI. Slightly more aggressive host
-  removal; the §2 host-fraction-versus-dose check will catch any damage.
-- **`bbcms` skipped in Phase A.** Its output feeds metaSPAdes in §5
-  (Phase B) only; Stages 2 and 3 read the `.nohost` files.
-
-## Already settled (§1 blockers)
-
-- **AMPLICON flag is wrong — the data is shotgun.** 49,636 distinct
-  25-mers in 50,000 reads of `SRR37092220_1`, no primer, 150 bp. A real
-  16S set tested the same way gave 724, dominated by the 341F primer.
-- **Individual animals, not pools.** 30 BioSamples, per-animal IDs in
-  `isolation_source` (`Sprague-Dawley Rattus_T4F1`), no pooling wording.
-  3 per group×sex cell. So §9 inference stands, with n=3 per cell.
-- **Size:** 173.3 GB of gzipped FASTQ (ENA), not the 143 GB in §1 —
-  that figure is the `.sra` archive size.
+- Stage 0: **complete** — 60/60 files verified against ENA checksums,
+  rat bowtie2 index built
+- Stage 1: ready to submit
+- Stages 2–3: to be written
