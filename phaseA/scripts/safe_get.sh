@@ -11,6 +11,9 @@
 #   3. download twice and compare - two independent fetches agreeing is
 #      strong evidence, since random corruption will not repeat identically
 #
+# -L everywhere: archive URLs commonly 302 to a CDN, and a redirect
+# response carries no Content-Length.
+#
 # Always fetches in byte-range chunks, because a single long connection on
 # this cluster gets cut (curl exit 18) after roughly 40 minutes.
 set -u
@@ -20,7 +23,7 @@ CHUNK=${CHUNK:-268435456}
 
 say(){ printf '%s\n' "$*"; }
 
-SIZE=$(curl -4 -fsSI --max-time 60 "$URL" | awk 'tolower($1)=="content-length:"{print $2+0}' | tail -1)
+SIZE=$(curl -4 -fsSIL --max-time 60 "$URL" | awk 'tolower($1)=="content-length:"{print $2+0}' | tail -1)
 [ -n "${SIZE:-}" ] && [ "$SIZE" -gt 0 ] 2>/dev/null || { say "cannot determine size of $URL"; exit 1; }
 say "url  : $URL"
 say "file : $OUT"
@@ -29,7 +32,7 @@ say "size : $SIZE bytes"
 # --- layer 1: look for a published checksum -------------------------------
 if [ -z "$WANT" ]; then
   for c in "${URL}.md5" "$(dirname "$URL")/md5sum.txt" "$(dirname "$URL")/checksums.txt" "$(dirname "$URL")/MD5SUM"; do
-    v=$(curl -4 -fsS --max-time 60 "$c" 2>/dev/null | awk -v f="$OUT" '$0 ~ f {print $1; exit}')
+    v=$(curl -4 -fsSL --max-time 60 "$c" 2>/dev/null | awk -v f="$OUT" '$0 ~ f {print $1; exit}')
     if [ -n "$v" ]; then WANT=$v; say "found published md5 at $c"; break; fi
   done
 fi
@@ -45,7 +48,7 @@ fetch(){  # fetch <dest>
     [ -f "$P" ] && [ "$(stat -c%s "$P")" -eq "$L" ] && continue
     for try in 1 2 3 4 5; do
       rm -f "$P"
-      curl -4 -fsS --max-time 1800 -r "${S}-${E}" -o "$P" "$URL"; rc=$?
+      curl -4 -fsSL --max-time 1800 -r "${S}-${E}" -o "$P" "$URL"; rc=$?
       got=$(stat -c%s "$P" 2>/dev/null || echo 0)
       [ "$rc" -eq 0 ] && [ "$got" -eq "$L" ] && break
       [ "$try" -eq 5 ] && { say "part $i failed 5x"; return 1; }
