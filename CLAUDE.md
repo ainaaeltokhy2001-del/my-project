@@ -35,7 +35,7 @@ Login nodes: login01, login02 (off-campus, port 33322), login03
 
 | Queue | Notes |
 |---|---|
-| `interactive` | 0 pending, starts at once, max 2 jobs. **Its nodes have internet.** |
+| `interactive` | 0 pending, starts at once. **Max 2 job SLOTS** — `-n 2` is the ceiling, and `-n 4` is refused with "not enough per-user job slots" even when nothing is running. **Its nodes have internet.** |
 | `high` | ~187 pending. 10 GB per core, ≤36 cores. **No internet on its nodes.** |
 | `normal` | ~9,400 pending. 5 GB per core, ≤36 cores. Exceeding per-core memory gets the job killed. |
 | `smp` | ~1,100 pending, ≤50 cores, "huge memory" |

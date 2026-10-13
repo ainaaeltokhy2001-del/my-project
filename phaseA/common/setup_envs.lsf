@@ -1,6 +1,6 @@
 #BSUB -J setupenv
 #BSUB -q interactive
-#BSUB -n 4
+#BSUB -n 2
 #BSUB -o logs/setupenv.%J.out
 #BSUB -e logs/setupenv.%J.err
 export PROJ=$HOME/selenium
