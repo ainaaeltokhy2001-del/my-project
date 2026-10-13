@@ -1,0 +1,7 @@
+#BSUB -J mpadb
+#BSUB -q interactive
+#BSUB -n 4
+#BSUB -o logs/mpadb.%J.out
+#BSUB -e logs/mpadb.%J.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/db_metaphlan.sh

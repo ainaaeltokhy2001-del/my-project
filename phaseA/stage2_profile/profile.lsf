@@ -1,0 +1,7 @@
+#BSUB -J "selprof[1-30]"
+#BSUB -q high
+#BSUB -n 16
+#BSUB -o logs/prof.%I.out
+#BSUB -e logs/prof.%I.err
+export PROJ=$HOME/selenium
+bash $PROJ/scripts/profile.sh
